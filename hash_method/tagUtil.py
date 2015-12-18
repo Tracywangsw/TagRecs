@@ -12,11 +12,14 @@ from math import sqrt
 
 ## Stat tags of users and movies of tags
 def statUserAndTag(path='../dataset/full/'):
-  (user,taglist) = ({},{})
+  (user,taglist,usermovies) = ({},{},{})
   with open(path+'tags.csv','rb') as f:
+    has_header = csv.Sniffer().has_header(f.read(1024))
+    f.seek(0)
     reader = csv.reader(f)
+    if has_header: next(reader)
     for row in reader:
-      (userid,movieid,tag,ts) = row[:]
+      (userid,movieid,tag,ts) = (int(row[0]),int(row[1]),row[2],int(row[3]))
 
       if tag in taglist:
         taglist[tag]['count'] += 1
@@ -36,7 +39,11 @@ def statUserAndTag(path='../dataset/full/'):
           user[userid]['taglist'][tag] = {'count':1,'tsfirst':ts,'tslast':ts}
       else:
         user.setdefault(userid,{'taglist':{tag:{'count':1,'tsfirst':ts,'tslast':ts}},'userfirst':ts,'userlast':ts})
-  return [user,taglist]
+
+      if userid in usermovies:
+        usermovies[userid].append(movieid)
+      else: usermovies.setdefault(userid,[movieid])
+  return [user,taglist,usermovies]
 
 
 ## tag-movies relation
@@ -106,4 +113,11 @@ def userTopTags(user,userlist=statUserAndTag()[0],min=5,top=50):
   tagsort.sort()
   tagsort.reverse()
   return tagsort[0:top]
+
+## user-movies relation
+
+def userMovies(user):
+  usermovies = statUserAndTag()[2][user]
+  print "user tagging movie count:"+str(len(usermovies))
+  return usermovies
 

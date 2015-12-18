@@ -1,8 +1,9 @@
 import tagUtil
 import movieUtil
+# import ratingUtil
 
 # return user-candidate-tags
-def getCandidateTags(user,top=20):
+def getCandidateTags(user,top=50):
   (finaltags,usertags,sorttag) = ({},{},[])
   for t in tagUtil.userTopTags(user,top=50): usertags[t[1]] = t[0]
   for t in usertags: finaltags[t] = usertags[t]
@@ -40,8 +41,15 @@ def movieAffinityRecursion(tag,movierank,usertags):
 # final recommendations for user
 def getRecommendMovies(user,top=30):
   movies = getCandidateMovies(user)
-  rankmovies = []
-  for m in movies: rankmovies.append([movies[m],movieUtil.getMovieById(m)])
+  bingo = 0
+  (rankmovies,usermovies) = ([],tagUtil.userMovies(user))
+  for m in movies:
+    if m not in usermovies: rankmovies.append([movies[m],movieUtil.getMovieById(m)])
+    else: bingo += 1
   rankmovies.sort()
   rankmovies.reverse()
+  print "count of bingo: " + str(bingo)
   return rankmovies[0:top]
+
+# def result():
+#   
