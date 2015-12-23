@@ -6,6 +6,7 @@ class Calculate:
   def __init__(self):
     self.tag_util = tag_utility.TagUtility()
     self.user_list = self.tag_util.get_user_list()
+    self.movie_list = self.tag_util.get_movie_list()
 
   # swith to hash table and normalization 
   def switch_list_to_dir(self,sort_list):
@@ -48,29 +49,32 @@ class Calculate:
     # top_sim_tag_list = sim_tag_dir[0:top]
     return self.switch_list_to_dir(sim_tag_dir[0:top])
 
+  def cosine_similiarity(self,set1,set2):
+    common = self.get_common_items(set1,set2)
+    if len(common) == 0: return 0
+
+    sum1 = sum([set1[item] for item in common])
+    sum2 = sum([set2[item] for item in common])
+
+    sum1_sq = sum([pow(set1[item],2) for item in common])
+    sum2_sq = sum([pow(set2[item],2) for item in common])
+    set_sum = sum([set1[item]*set2[item] for item in common])
+
+    rate = float(len(common))/(len(set1)+len(set2)-len(common))
+    return float(set_sum*rate)/sqrt(sum1_sq*sum2_sq)
+
   # input two tag, return the similarity
   ## choose which similiarity method? ##
   def tag_similarity(self,tag1,tag2):
     (tag1_movies,tag2_movies) = (self.tag_util.get_tag_movies(tag1),self.tag_util.get_tag_movies(tag2))
-    common = self.get_common_movies(tag1,tag2)
-    if len(common) == 0: return 0
+    return self.cosine_similiarity(tag1_movies,tag2_movies)
 
-    sum1 = sum([tag1_movies[item] for item in common])
-    sum2 = sum([tag2_movies[item] for item in common])
-
-    sum1_sq = sum([pow(tag1_movies[item],2) for item in common])
-    sum2_sq = sum([pow(tag2_movies[item],2) for item in common])
-    tag_sum = sum([tag1_movies[item]*tag2_movies[item] for item in common])
-
-    rate = float(len(common))/(len(tag1_movies)+len(tag2_movies)-len(common))
-    return float(tag_sum*rate)/sqrt(sum1_sq*sum2_sq)
 
   # return common movies of the two tags
-  def get_common_movies(self,tag1,tag2):
-    (tag1_movies,tag2_movies) = (self.tag_util.get_tag_movies(tag1),self.tag_util.get_tag_movies(tag2))
+  def get_common_items(self,set1,set2):
     common = {}
-    for item in tag1_movies: 
-      if item in tag2_movies: 
+    for item in set1: 
+      if item in set2: 
         common[item] = 1
     return common
 
@@ -135,5 +139,5 @@ class Calculate:
 
 def main():
   t = Calculate()
-  s = t.user_recommend_movies(2687)
+  s = t.tag_top_similar_tags('love')
   print s
