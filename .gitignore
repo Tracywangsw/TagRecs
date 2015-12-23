@@ -1,5 +1,4 @@
 # Ignore dataset files
-/dataset/full
-/dataset/small
+/dataset
 *.pyc
 
