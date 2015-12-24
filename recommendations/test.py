@@ -77,10 +77,10 @@ class Test:
       precision = self.cal_precise(recommend_list,test_list)
       recall = self.cal_recall(recommend_list,test_list)
       f1 = self.cal_f1(recommend_list,test_list)
-      print 'userid : ' + str(u)
-      print 'precision : ' + str(precision)
-      print 'recall : ' + str(recall)
-      print 'f1 : ' + str(f1)
+      # print 'userid : ' + str(u)
+      # print 'precision : ' + str(precision)
+      # print 'recall : ' + str(recall)
+      # print 'f1 : ' + str(f1)
       total_pre += precision
       total_recall += recall
       total_f1 += f1
@@ -97,10 +97,10 @@ class Test:
       precision = self.cal_precise(recommend_list,test_list)
       recall = self.cal_recall(recommend_list,test_list)
       f1 = self.cal_f1(recommend_list,test_list)
-      print 'userid : ' + str(u)
-      print 'precision : ' + str(precision)
-      print 'recall : ' + str(recall)
-      print 'f1 : ' + str(f1)
+      # print 'userid : ' + str(u)
+      # print 'precision : ' + str(precision)
+      # print 'recall : ' + str(recall)
+      # print 'f1 : ' + str(f1)
       total_pre += precision
       total_recall += recall
       total_f1 += f1
@@ -110,4 +110,6 @@ class Test:
 
 def main():
   t = Test()
+  t.estimate_hybird_recommend()
   t.estimate_item_based_recommend()
+  t.estimate_random_recommend()
