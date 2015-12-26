@@ -35,7 +35,7 @@ class Calculate:
   ## need to optimize ## ## how to design time-factor function ##
   def cal_time_factor(self,first,last):
     current = time.time()
-    return (last-first)/(current-last)
+    return (current-first)/(current-last)
 
   # input tag name, return the most similar top n tags
   def tag_top_similar_tags(self,tag,top=20,min=10):
