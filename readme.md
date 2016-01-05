@@ -1,3 +1,5 @@
+This repository consists of two different recommend methods
+
 # Tag_based hybrid recommendation method
 
 ## Attention
@@ -13,3 +15,6 @@
 - Compare with the item_based method, random method by the criterial of precision, recall rate and f1
 - import test.py in the recommendation folder
 - run test.main()
+
+# Topic model and tag-based hybrid recommendtion method
+

@@ -1,6 +1,7 @@
 import tag_utility
 import time
 from math import sqrt
+from nltk.corpus import wordnet
 
 class Calculate:
   def __init__(self):
@@ -63,11 +64,25 @@ class Calculate:
     rate = float(len(common))/(len(set1)+len(set2)-len(common))
     return float(set_sum*rate)/sqrt(sum1_sq*sum2_sq)
 
+  def syn_similarity(self,tag1,tag2):
+    # tag1 = tag1.decode('utf8').encode('ascii')
+    # tag2 = tag2.decode('utf8').encode('ascii')
+    wordset1 = wordnet.synsets(tag1)
+    wordset2 = wordnet.synsets(tag2)
+    if wordset1 and wordset2:
+      s = wordset1[0].wup_similarity(wordset2[0])
+      if s: return s
+    return 0
+
   # input two tag, return the similarity
   ## choose which similiarity method? ##
   def tag_similarity(self,tag1,tag2):
+    # print tag1 +"##"+ tag2
     (tag1_movies,tag2_movies) = (self.tag_util.get_tag_movies(tag1),self.tag_util.get_tag_movies(tag2))
-    return self.cosine_similiarity(tag1_movies,tag2_movies)
+    data_similarity = self.cosine_similiarity(tag1_movies,tag2_movies)
+    text_similarity = self.syn_similarity(tag1,tag2)
+    similiarity = data_similarity + text_similarity
+    return similiarity
 
 
   # return common movies of the two tags
@@ -131,6 +146,7 @@ class Calculate:
     user_movies_list = self.tag_util.get_user_movies(user)
     for m in movie_score_map:
       if m not in user_movies_list: movie_sort_list.append([movie_score_map[m],m])
+      # movie_sort_list.append([movie_score_map[m],m])
     movie_sort_list.sort()
     movie_sort_list.reverse()
     for m in movie_sort_list[0:top]: movie_list.append(m[1])
@@ -139,5 +155,6 @@ class Calculate:
 
 def main():
   t = Calculate()
-  s = t.tag_top_similar_tags('love')
+  s = t.tag_top_similar_tags('romance')
+  print t.tag_similarity('romance','virginity')
   print s

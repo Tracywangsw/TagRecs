@@ -16,24 +16,6 @@ class SplitSet:
       else: fullset.setdefault(userid,[[ts,userid,movieid,tag]])
     return fullset
 
-  # def get_tag_count(self):
-  #   data = self.whole_data
-  #   fullset = {}
-  #   for row in data:
-  #     (userid,movieid,tag,ts) = (int(row[0]),int(row[1]),row[2],int(row[3]))
-  #     if tag in fullset: fullset[tag].append([ts,userid,movieid,tag])
-  #     else: fullset.setdefault(tag,[[ts,userid,movieid,tag]])
-  #   return len(fullset)
-
-  # def get_movie_count(self):
-  #   data = self.whole_data
-  #   fullset = {}
-  #   for row in data:
-  #     (userid,movieid,tag,ts) = (int(row[0]),int(row[1]),row[2],int(row[3]))
-  #     if movieid in fullset: fullset[movieid].append([ts,userid,movieid,tag])
-  #     else: fullset.setdefault(movieid,[[ts,userid,movieid,tag]])
-  #   return len(fullset)
-
   # return data of single user
   def user_data(self,user):
     userset = self.set[user]
