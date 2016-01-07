@@ -1,5 +1,6 @@
 import db_util
 from math import sqrt
+import json
 
 
 def hash2list(map):
@@ -68,23 +69,31 @@ def cosine_sim(set1,set2):
   rate = float(len(common))/(len(set1)+len(set2)-len(common))
   return float(set_sum*rate)/sqrt(sum1_sq*sum2_sq)
 
-class user_sim():
-  def __init__(self,userid):
-    self.user_tags = generate_tag(userid).user_tags()
-    self.user_list = db_util.get_user_list()
 
-  def user_sim(self):
-    user_sim_matrix = {}
-    for u in self.user_list:
-      u_tags = generate_tag(u).user_tags()
-      user_sim_matrix[u] = cosine_sim(self.user_tags,u_tags)
-      print cosine_sim(self.user_tags,u_tags)
-    return user_sim_matrix
+def tag_sim_matrix():
+  user_list = db_util.get_user_list()
+  sim_matrix = {}
+  for i in range(0,len(user_list)):
+    for j in range(i+1,len(user_list)):
+      (person,other) = (user_list[i],user_list[j])
+      person_tags = generate_tag(person).user_tags()
+      other_tags = generate_tag(other).user_tags()
+      sim_matrix[str((person,other))] = cosine_sim(person_tags,other_tags)
+      print sim_matrix[str((person,other))]
+  json.dump(sim_matrix,open("matrix/tags_sim_matrix.txt",'w'))
+  return sim_matrix
+
+def get_tag_sim_matrix(path='matrix/tags_sim_matrix.txt'):
+  return json.load(file(path))
 
 
-def main(id):
+def main():
   # g = generate_tag(id)
   # print g.user_tags()
-  u = user_sim(id)
-  u.user_sim()
-
+  # u = user_sim(id)
+  # u.user_sim()
+  tag_sim_matrix()
+  # a = {str((1,2)):11,str((2,3)):"person"}
+  # json.dump(a,open("matrix/tags_sim_matrix.txt",'w'))
+  # u = get_tag_sim_matrix()
+  # print u[str((1,2))]

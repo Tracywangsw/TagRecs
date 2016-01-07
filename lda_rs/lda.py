@@ -14,7 +14,7 @@ class corpora_build():
   def clean_doc(self,doc_set):
     tokenizer = RegexpTokenizer(r'\w+')
     en_stop = get_stop_words('en')
-    en_stop += ['t','s','can','d','ve','isn','didn','wouldn','don','shouldn','haven','hadn','doesn','couldn']
+    en_stop += ['t','s','u','can','d','ve','isn','didn','wouldn','don','shouldn','haven','hadn','doesn','couldn']
     p_stemmer = PorterStemmer()
     texts = []
     for i in doc_set:
@@ -28,7 +28,7 @@ class corpora_build():
 def lda_model_build(doc_set,num_topics):
   print 'lda_model_build start,datetime:'+ str(datetime.datetime.now())
   util = corpora_build(doc_set)
-  ldamodel = gensim.models.ldamodel.LdaModel(util.corpora, num_topics, id2word = util.dictionary, passes=20)
+  ldamodel = gensim.models.ldamodel.LdaModel(util.corpora, num_topics, id2word = util.dictionary, passes=20, minimum_probability=0)
   print 'lda_model_build end,datetime:'+ str(datetime.datetime.now())
   return ldamodel
 
@@ -36,9 +36,13 @@ def lda_model_build(doc_set,num_topics):
 def doc_topic_distribution(lda,doc):
   texts = corpora_build(doc)
   test = lda[texts.corpora][0]
-  a = list(sorted(test, key=lambda x: x[1]))
-  print lda.prints_topic(a[0][0])
-  print lda.print_topic(a[-1][0])
+  # a = list(sorted(test, key=lambda x: x[1], reverse=True)) #rank distribution
+  # print lda.print_topic(a[-1][0]) # the least relative
+  # print lda.print_topic(a[0][0]) # the most relative
+  return test
+
+def load_lda(path='../lda.txt'):
+  return gensim.models.ldamodel.LdaModel.load(path,mmap='r')
 
 def main():
   doc_a = "Brocolli is good to eat. My brother likes to eat good brocolli, but not my mother."
@@ -47,7 +51,9 @@ def main():
   doc_d = "I often feel pressure to perform well at school, but my mother never seems to drive my brother to do better."
   doc_e = "Health professionals say that brocolli is good for your health." 
   doc_set = [doc_a, doc_b, doc_c, doc_d, doc_e]
-  lda = lda_model_build(doc_set,num_topics=7)
-  test_doc = ["My brother likes to eat good brocolli"]
-  doc_topic_distribution(lda,test_doc)
-  print lda.show_topics()
+  lda = lda_model_build(doc_set,num_topics=20)
+  # lda.save('../lda.txt')
+  # lda = load_lda()
+  test_doc = ["My mother likes to eat good brocolli. "]
+  print doc_topic_distribution(lda,test_doc)
+  # print lda.show_topics()
