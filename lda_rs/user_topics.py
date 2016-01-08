@@ -94,10 +94,9 @@ def multiprocess(processes, model, user_list_list):
   pool = mp.Pool(processes=processes)
   results = [pool.apply_async(topic_sim_matrix, args=(model, l)) for l in user_list_list]
   results = [p.get() for p in results]
-  dest = dict(results[0].get())
+  dest = dict(results[0])
   for r in range(1,len(results)):
-    data = r.get()
-    dest.update(data)
+    dest.update(results[r])
   return dest
 
 def split_item(item,n=8):
