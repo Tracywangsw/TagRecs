@@ -1,5 +1,6 @@
 import db_util
 from math import sqrt
+import multiprocessing as mp
 import json
 
 
@@ -70,30 +71,46 @@ def cosine_sim(set1,set2):
   return float(set_sum*rate)/sqrt(sum1_sq*sum2_sq)
 
 
-def tag_sim_matrix():
-  user_list = db_util.get_user_list()
+def tag_sim_matrix(user_list):
+  # user_list = db_util.get_user_list()
   sim_matrix = {}
   for i in range(0,len(user_list)):
+    person = user_list[i]
+    person_tags = generate_tag(person).user_tags()
     for j in range(i+1,len(user_list)):
-      (person,other) = (user_list[i],user_list[j])
-      person_tags = generate_tag(person).user_tags()
+      other = user_list[j]
       other_tags = generate_tag(other).user_tags()
       sim_matrix[str((person,other))] = cosine_sim(person_tags,other_tags)
       print sim_matrix[str((person,other))]
-  json.dump(sim_matrix,open("matrix/tags_sim_matrix.txt",'w'))
+  # json.dump(sim_matrix,open("matrix/tags_sim_matrix.txt",'w'))
   return sim_matrix
 
 def get_tag_sim_matrix(path='matrix/tags_sim_matrix.txt'):
   return json.load(file(path))
 
+def multiprocess(processes, user_list_list):
+  pool = mp.Pool(processes=processes)
+  results = [pool.apply_async(tag_sim_matrix, args=(l,)) for l in user_list_list]
+  results = [p.get() for p in results]
+  dest = dict(results[0].get())
+  for r in range(1,len(results)):
+    data = r.get()
+    dest.update(data)
+  return dest
+
+def split_item(item,n=8):
+  l = len(item)
+  item_list = []
+  item_list.append(item[0:l/n])
+  for i in range(1,n):
+    s = i*l/n
+    item_list.append(item[s:(i+1)*l/n])
+  return item_list
+
 
 def main():
-  # g = generate_tag(id)
-  # print g.user_tags()
-  # u = user_sim(id)
-  # u.user_sim()
-  tag_sim_matrix()
-  # a = {str((1,2)):11,str((2,3)):"person"}
-  # json.dump(a,open("matrix/tags_sim_matrix.txt",'w'))
-  # u = get_tag_sim_matrix()
-  # print u[str((1,2))]
+  processes = 20
+  user_list = db_util.get_user_list()
+  user_list_list = split_item(user_list,n=processes)
+  results = multiprocess(processes,user_list_list)
+  json.dump(sim_matrix,open("matrix/tags_sim_matrix.txt",'w'))

@@ -4,9 +4,11 @@ from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models
 import gensim
 import datetime
+import pdb
 
 class corpora_build():
   def __init__(self,doc_set):
+    
     doc = self.clean_doc(doc_set)
     self.dictionary = corpora.Dictionary(doc)
     self.corpora = [self.dictionary.doc2bow(text) for text in doc]

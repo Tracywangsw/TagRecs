@@ -9,7 +9,7 @@ def user_sim_matrix():
   sim_matrix = {}
   for m in topic_matirx:
     if m in tag_matrix:
-      sim_matrix[m] = topic_matirx[m]*tag_matrix[m]
+      sim_matrix[m] = topic_matirx[m]*(tag_matrix[m]+0.001)
   json.dump(sim_matrix,open("matrix/sim_matrix.txt",'w'))
   return sim_matrix
 
@@ -59,6 +59,6 @@ def list_count(tuple_list):
   return dic
 
 def main():
-  user_tags.main()
+  # user_tags.main()
   user_topics.main()
-  user_sim_matrix()
+  # user_sim_matrix()

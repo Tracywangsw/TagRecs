@@ -3,6 +3,7 @@ import db_util
 import datetime
 import numpy as np
 import scipy.stats as stats
+import multiprocessing as mp
 import math
 import pdb
 import json
@@ -58,7 +59,8 @@ def user_topics(userid,model):
   movie_list = db_util.user_info(userid).user_mv_list
   plot_list = user_movie_plots(movie_list)
   user_doc = get_plot_doc(plot_list)
-  return lda.doc_topic_distribution(model,user_doc)
+  topic_dis = lda.doc_topic_distribution(model,user_doc)
+  return topic_dis
 
 def topic_sim(topic_a,topic_b):
   kl = kl_divergence(topic_a,topic_b)
@@ -69,8 +71,8 @@ def kl_divergence(p,q):
 
 # def topic_fill(topic,len):
 
-def topic_sim_matrix(model):
-  user_list = db_util.get_user_list()
+def topic_sim_matrix(model,user_list):
+  # user_list = db_util.get_user_list()
   sim_matrix = {}
   for i in range(0,len(user_list)):
     person = user_list[i]
@@ -82,14 +84,37 @@ def topic_sim_matrix(model):
       key = (person,other)
       sim_matrix[str(key)] = topic_sim(topic_person,topic_other)
       print sim_matrix[str(key)]
-  json.dump(sim_matrix,open("matrix/50_topics_sim_matrix.txt",'w'))
+  # json.dump(sim_matrix,open("matrix/50_topics_sim_matrix.txt",'w'))
   return sim_matrix
 
 def get_topic_sim_matrix(path="matrix/50_topics_sim_matrix.txt"):
   return json.load(file(path))
 
+def multiprocess(processes, model, user_list_list):
+  pool = mp.Pool(processes=processes)
+  results = [pool.apply_async(topic_sim_matrix, args=(model, l)) for l in user_list_list]
+  results = [p.get() for p in results]
+  dest = dict(results[0].get())
+  for r in range(1,len(results)):
+    data = r.get()
+    dest.update(data)
+  return dest
+
+def split_item(item,n=8):
+  l = len(item)
+  item_list = []
+  item_list.append(item[0:l/n])
+  for i in range(1,n):
+    s = i*l/n
+    item_list.append(item[s:(i+1)*l/n])
+  return item_list
 
 def main():
   lda_loaded_model = lda.load_lda('model/50_topics_lda.txt')
-  topic_sim_matrix(lda_loaded_model)
+  processes = 20
+  user_list = db_util.get_user_list()
+  user_list_list = split_item(user_list,n=processes)
+  results = multiprocess(processes,lda_loaded_model,user_list_list)
+  json.dump(results,open("matrix/50_topics_sim_matrix.txt",'w'))
+  # topic_sim_matrix(lda_loaded_model)
   # item_lda_model(num_topics=50,path='model/50_topics_lda.txt')
