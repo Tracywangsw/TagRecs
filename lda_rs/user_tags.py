@@ -92,10 +92,9 @@ def multiprocess(processes, user_list_list):
   pool = mp.Pool(processes=processes)
   results = [pool.apply_async(tag_sim_matrix, args=(l,)) for l in user_list_list]
   results = [p.get() for p in results]
-  dest = dict(results[0].get())
+  dest = dict(results[0])
   for r in range(1,len(results)):
-    data = r.get()
-    dest.update(data)
+    dest.update(results[r])
   return dest
 
 def split_item(item,n=8):
@@ -113,4 +112,4 @@ def main():
   user_list = db_util.get_user_list()
   user_list_list = split_item(user_list,n=processes)
   results = multiprocess(processes,user_list_list)
-  json.dump(sim_matrix,open("matrix/tags_sim_matrix.txt",'w'))
+  json.dump(results,open("matrix/tags_sim_matrix.txt",'w'))
