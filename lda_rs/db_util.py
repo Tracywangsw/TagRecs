@@ -3,10 +3,8 @@ import sys
 
 def get_cursor():
   conn_str = "host='localhost' dbname='movielen_1m' user='dbuser' password='dbuser'"
-  # print "Connecting to database\n ->%s" % (conn_str)
   conn = psycopg2.connect(conn_str)
   cursor = conn.cursor()
-  # print "Connected!\n"
   return cursor
 
 def get_all_plots():

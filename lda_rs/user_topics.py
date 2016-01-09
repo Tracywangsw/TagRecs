@@ -1,5 +1,5 @@
 import lda
-import db_util
+import db
 import datetime
 import numpy as np
 import scipy.stats as stats
@@ -9,11 +9,13 @@ import pdb
 import json
 
 # lda_loaded_model = lda.load_lda('model/50_topics_lda.txt')
+db_info = db.info()
 
 def movieid_plot_map(return_list):
   mv_plot = {}
   for r in return_list:
-    (mvid,plot) = r[:]
+    # (mvid,plot) = r[:]
+    (mvid,plot) = (r,return_list[r])
     if plot:
       if type(plot) is tuple:
         plot_str = ''
@@ -24,7 +26,8 @@ def movieid_plot_map(return_list):
     else: print "##!!!"
   return mv_plot
 
-plot_map = movieid_plot_map(db_util.get_all_plots())
+# plot_map = movieid_plot_map(db_util.get_all_plots())
+plot_map = movieid_plot_map(db_info.mv_plots_set)
 
 def item_lda_model(num_topics=500,path='model/whole_movie_lda.txt'):
   print 'load plots start,datetime:'+ str(datetime.datetime.now())
@@ -56,7 +59,8 @@ def user_movie_plots(mvlist,plot_set=plot_map):
 
 
 def user_topics(userid,model):
-  movie_list = db_util.user_info(userid).user_mv_list
+  # movie_list = db_util.user_info(userid).user_mv_list
+  movie_list = db_info.user_train_movies(userid)
   plot_list = user_movie_plots(movie_list)
   user_doc = get_plot_doc(plot_list)
   topic_dis = lda.doc_topic_distribution(model,user_doc)
@@ -69,22 +73,12 @@ def topic_sim(topic_a,topic_b):
 def kl_divergence(p,q):
   return np.sum([stats.entropy(p,q),stats.entropy(q,p)])
 
-# def topic_fill(topic,len):
-
-def topic_sim_matrix(model,user_list):
-  # user_list = db_util.get_user_list()
+def topic_sim_matrix(model,person,other):
   sim_matrix = {}
-  for i in range(0,len(user_list)):
-    person = user_list[i]
-    topic_person = user_topics(person,model)
-    for j in range(i+1,len(user_list)):
-      other = user_list[j]
-      topic_other = user_topics(other,model)
-      print str(person) + " ## " + str(other)
-      key = (person,other)
-      sim_matrix[str(key)] = topic_sim(topic_person,topic_other)
-      print sim_matrix[str(key)]
-  # json.dump(sim_matrix,open("matrix/50_topics_sim_matrix.txt",'w'))
+  topic_person = user_topics(person,model)
+  topic_other = user_topics(other,model)
+  sim_matrix[str((person,other))] = topic_sim(topic_person,topic_other)
+  print sim_matrix
   return sim_matrix
 
 def get_topic_sim_matrix(path="matrix/50_topics_sim_matrix.txt"):
@@ -92,11 +86,11 @@ def get_topic_sim_matrix(path="matrix/50_topics_sim_matrix.txt"):
 
 def multiprocess(processes, model, user_list_list):
   pool = mp.Pool(processes=processes)
-  results = [pool.apply_async(topic_sim_matrix, args=(model, l)) for l in user_list_list]
-  results = [p.get() for p in results]
-  dest = dict(results[0])
+  results = [pool.apply_async(topic_sim_matrix, args=(model,l[0],l[1])) for l in user_list_list]
+  # results = [p.get() for p in results]
+  dest = dict(results[0].get())
   for r in range(1,len(results)):
-    dest.update(results[r])
+    dest.update(results[r].get())
   return dest
 
 def split_item(item,n=8):
@@ -108,11 +102,10 @@ def split_item(item,n=8):
     item_list.append(item[s:(i+1)*l/n])
   return item_list
 
-def main():
+def main(processes = 30):
   lda_loaded_model = lda.load_lda('model/50_topics_lda.txt')
-  processes = 20
-  user_list = db_util.get_user_list()
-  user_list_list = split_item(user_list,n=processes)
+  user_list = db_info.user_list
+  user_list_list = db.split_item(user_list)
   results = multiprocess(processes,lda_loaded_model,user_list_list)
   json.dump(results,open("matrix/50_topics_sim_matrix.txt",'w'))
   # topic_sim_matrix(lda_loaded_model)

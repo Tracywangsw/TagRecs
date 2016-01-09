@@ -1,8 +1,10 @@
-import db_util
+# import db_util
+import db
 from math import sqrt
 import multiprocessing as mp
 import json
 
+db_info = db.info()
 
 def hash2list(map):
   sort_tag = []
@@ -20,18 +22,15 @@ def list2hash(list):
 
 class generate_tag():
   def __init__(self,userid):
-    self.mv_list = db_util.user_info(userid).user_mv_list
+    # self.mv_list = db_util.user_info(userid).user_mv_list
+    self.mv_list = db_info.user_train_movies(userid)
 
   def mv_top_tags(self,mvid,top=10):
-    tag_list = db_util.get_mv_tags(mvid)
-    hash_tag = {}
+    # tag_list = db_util.get_mv_tags(mvid)
+    # hash_tag = {}
+    hash_tag = db_info.movie_tags(mvid)
     tags = []
     count = 0
-
-    for t in tag_list:
-      tag = t[0]
-      if tag not in hash_tag: hash_tag.setdefault(tag,1)
-      else: hash_tag[tag] += 1
 
     sort_tag = hash2list(hash_tag)
     for t in sort_tag: 
@@ -71,18 +70,20 @@ def cosine_sim(set1,set2):
   return float(set_sum*rate)/sqrt(sum1_sq*sum2_sq)
 
 
-def tag_sim_matrix(user_list):
-  # user_list = db_util.get_user_list()
+def tag_sim_matrix(person,other):
   sim_matrix = {}
-  for i in range(0,len(user_list)):
-    person = user_list[i]
-    person_tags = generate_tag(person).user_tags()
-    for j in range(i+1,len(user_list)):
-      other = user_list[j]
-      other_tags = generate_tag(other).user_tags()
-      sim_matrix[str((person,other))] = cosine_sim(person_tags,other_tags)
-      print sim_matrix[str((person,other))]
-  # json.dump(sim_matrix,open("matrix/tags_sim_matrix.txt",'w'))
+  # for i in range(0,len(user_list)):
+  #   person = user_list[i]
+  #   person_tags = generate_tag(person).user_tags()
+  #   for j in range(i+1,len(user_list)):
+  #     other = user_list[j]
+  #     other_tags = generate_tag(other).user_tags()
+  #     sim_matrix[str((person,other))] = cosine_sim(person_tags,other_tags)
+  #     print sim_matrix[str((person,other))]
+  person_tags = generate_tag(person).user_tags()
+  other_tags = generate_tag(other).user_tags()
+  sim_matrix[str((person,other))] = cosine_sim(person_tags,other_tags)
+  print sim_matrix
   return sim_matrix
 
 def get_tag_sim_matrix(path='matrix/tags_sim_matrix.txt'):
@@ -90,26 +91,24 @@ def get_tag_sim_matrix(path='matrix/tags_sim_matrix.txt'):
 
 def multiprocess(processes, user_list_list):
   pool = mp.Pool(processes=processes)
-  results = [pool.apply_async(tag_sim_matrix, args=(l,)) for l in user_list_list]
-  results = [p.get() for p in results]
-  dest = dict(results[0])
+  results = [pool.apply_async(tag_sim_matrix, args=(l[0],l[1])) for l in user_list_list]
+  # results = [p.get() for p in results]
+  dest = dict(results[0].get())
   for r in range(1,len(results)):
-    dest.update(results[r])
+    dest.update(results[r].get())
   return dest
 
-def split_item(item,n=8):
+def split_item(item):
   l = len(item)
   item_list = []
-  item_list.append(item[0:l/n])
-  for i in range(1,n):
-    s = i*l/n
-    item_list.append(item[s:(i+1)*l/n])
+  for i in range(l):
+    for j in range(i+1,l):
+      item_list.append([item[i],item[j]])
   return item_list
 
 
-def main():
-  processes = 20
-  user_list = db_util.get_user_list()
-  user_list_list = split_item(user_list,n=processes)
+def main(processes = 30):
+  user_list = db_info.user_list
+  user_list_list = db.split_item(user_list)
   results = multiprocess(processes,user_list_list)
   json.dump(results,open("matrix/tags_sim_matrix.txt",'w'))
