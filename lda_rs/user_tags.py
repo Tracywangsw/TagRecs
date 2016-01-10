@@ -107,7 +107,7 @@ def split_item(item):
   return item_list
 
 
-def main(processes = 30):
+def main(processes = 8):
   user_list = db_info.user_list
   user_list_list = db.split_item(user_list)
   results = multiprocess(processes,user_list_list)

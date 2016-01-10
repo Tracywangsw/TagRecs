@@ -32,7 +32,7 @@ def get_mv_plots():
 
 def get_train_ratings():
   cursor = get_cursor()
-  cursor.execute("select userid,movieid from rating_train where rating>3.0 and userid<30")
+  cursor.execute("select userid,movieid from rating_train where rating>3.0")
   return_list = cursor.fetchall()
   train_rating = record_count(return_list)
   return train_rating

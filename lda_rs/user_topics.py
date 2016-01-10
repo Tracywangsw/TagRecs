@@ -26,7 +26,6 @@ def movieid_plot_map(return_list):
     else: print "##!!!"
   return mv_plot
 
-# plot_map = movieid_plot_map(db_util.get_all_plots())
 plot_map = movieid_plot_map(db_info.mv_plots_set)
 
 def item_lda_model(num_topics=500,path='model/whole_movie_lda.txt'):
@@ -57,14 +56,20 @@ def user_movie_plots(mvlist,plot_set=plot_map):
     else: print str(m)+" has no plot"
   return user_plots
 
-
 def user_topics(userid,model):
-  # movie_list = db_util.user_info(userid).user_mv_list
   movie_list = db_info.user_train_movies(userid)
   plot_list = user_movie_plots(movie_list)
   user_doc = get_plot_doc(plot_list)
   topic_dis = lda.doc_topic_distribution(model,user_doc)
   return topic_dis
+
+def user_topic_dic(model=lda.load_lda('model/50_topics_lda.txt')):
+  topic_dic = {}
+  for u in db_info.user_list:
+    topic_dic[u] = user_topics(u,model)
+  return topic_dic
+
+user_topic_map = user_topic_dic()
 
 def topic_sim(topic_a,topic_b):
   kl = kl_divergence(topic_a,topic_b)
@@ -75,8 +80,10 @@ def kl_divergence(p,q):
 
 def topic_sim_matrix(model,person,other):
   sim_matrix = {}
-  topic_person = user_topics(person,model)
-  topic_other = user_topics(other,model)
+  # topic_person = user_topics(person,model)
+  # topic_other = user_topics(other,model)
+  topic_person = user_topic_map[person]
+  topic_other = user_topic_map[other]
   sim_matrix[str((person,other))] = topic_sim(topic_person,topic_other)
   print sim_matrix
   return sim_matrix
@@ -87,7 +94,6 @@ def get_topic_sim_matrix(path="matrix/50_topics_sim_matrix.txt"):
 def multiprocess(processes, model, user_list_list):
   pool = mp.Pool(processes=processes)
   results = [pool.apply_async(topic_sim_matrix, args=(model,l[0],l[1])) for l in user_list_list]
-  # results = [p.get() for p in results]
   dest = dict(results[0].get())
   for r in range(1,len(results)):
     dest.update(results[r].get())
@@ -102,7 +108,7 @@ def split_item(item,n=8):
     item_list.append(item[s:(i+1)*l/n])
   return item_list
 
-def main(processes = 30):
+def main(processes = 8):
   lda_loaded_model = lda.load_lda('model/50_topics_lda.txt')
   user_list = db_info.user_list
   user_list_list = db.split_item(user_list)
