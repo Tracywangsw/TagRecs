@@ -69,7 +69,7 @@ def user_topic_dic(model=lda.load_lda('model/50_topics_lda.txt')):
     topic_dic[u] = user_topics(u,model)
   return topic_dic
 
-user_topic_map = user_topic_dic()
+# user_topic_map = user_topic_dic()
 
 def topic_sim(topic_a,topic_b):
   kl = kl_divergence(topic_a,topic_b)

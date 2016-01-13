@@ -23,7 +23,7 @@ def get_user_neighbors(userid,top):
   user_rank = []
   global_sim_matrix = get_sim_matrix()
   for other in db_info.user_list:
-    if other == userid: break
+    if other == userid: continue
     key1 = str((userid,other))
     key2 = str((other,userid))
     if key1 in global_sim_matrix:
@@ -32,18 +32,18 @@ def get_user_neighbors(userid,top):
       user_rank.append([global_sim_matrix[key2],other])
     else: print "can not find similarity between"+ key1
   user_rank.sort(reverse=True)
-  neighbor_list = user_tags.list2hash(user_rank)
-  top_neighbor_tuple = tuple(neighbor_list.keys()[0:top])
+  neighbor_list = [u[1] for u in user_rank[0:top]]
+  top_neighbor_tuple = tuple(neighbor_list)
   return top_neighbor_tuple
 
 
-def recommend_for_user(userid,top):
-  neighbors = get_user_neighbors(userid,top=30)
+def recommend_for_user(userid,top_neighbor=30,top_movie=50):
+  neighbors = get_user_neighbors(userid,top=top_neighbor)
   neighbor_movies = db.get_movie_from_users(neighbors)
   movies_count = list_count(neighbor_movies)
   movies_count = filter_item_for_user(movies_count,userid)
   candidate_list = user_tags.hash2list(movies_count)
-  recommend_list = [candidate_list[i][1] for i in range(0,top)]
+  recommend_list = [candidate_list[i][1] for i in range(0,top_movie)]
   return recommend_list
 
 

@@ -1,7 +1,8 @@
 import psycopg2
 
 def get_cursor():
-  conn_str = "host='localhost' dbname='movielen_1m' user='dbuser' password='dbuser'"
+  # conn_str = "host='localhost' dbname='movielen_1m' user='dbuser' password='dbuser'"
+  conn_str = "host='localhost' dbname='movielen_1M' user='python' password='python'"
   conn = psycopg2.connect(conn_str)
   cursor = conn.cursor()
   return cursor
@@ -40,7 +41,9 @@ def get_train_ratings():
 def get_test_ratings():
   cursor = get_cursor()
   cursor.execute("select userid,movieid from rating_test")
-  return cursor.fetchall()
+  return_list = cursor.fetchall()
+  test_rating = record_count(return_list)
+  return test_rating
 
 def get_mv_tags():
   cursor = get_cursor()
@@ -70,6 +73,7 @@ class info():
     self.mv_tags_set = get_mv_tags()
     self.train_ratings_set = get_train_ratings()
     self.user_list = self.train_ratings_set.keys()
+    self.test_ratings_set = get_test_ratings()
 
   def user_train_movies(self,userid):
     return self.train_ratings_set[userid].keys()
@@ -81,6 +85,9 @@ class info():
 
   def movie_plot(self,movieid):
     return self.mv_plots_set[movieid]
+
+  def user_test_movies(self,userid):
+    return self.test_ratings_set[userid].keys()
 
 def main():
   i = info()
