@@ -2,4 +2,6 @@
 /dataset
 *.pyc
 /lda_rs/model
+/lda_rs/result
+/lda_rs/matrix
 

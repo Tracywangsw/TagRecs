@@ -21,7 +21,9 @@ def get_sim_matrix(path='matrix/sim_matrix.txt'):
 
 def get_user_neighbors(userid,top):
   user_rank = []
-  global_sim_matrix = get_sim_matrix()
+  # global_sim_matrix = get_sim_matrix()
+  global_sim_matrix = user_topics.get_topic_sim_matrix()
+  # global_sim_matrix = user_tags.get_tag_sim_matrix()
   for other in db_info.user_list:
     if other == userid: continue
     key1 = str((userid,other))

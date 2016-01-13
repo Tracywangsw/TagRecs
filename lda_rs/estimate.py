@@ -31,10 +31,15 @@ def cal_f1(recm,testm):
 
 def estimate_recommender():
   estimate_json = {}
-  user_list = db_info.user_list
+  # user_list = db_info.user_list
+  user_list = []
+  for u in db_info.user_list:
+    if len(db_info.user_train_movies(u)) > 20 and len(db_info.user_test_movies(u)) > 5:
+      user_list.append(u)
+
   (total_pre,total_recall,total_f1) = (0,0,0)
   for u in user_list:
-    recommend_list = recommendation.recommend_for_user(u,100,30)
+    recommend_list = recommendation.recommend_for_user(u,50,50)
     test_list = db_info.user_test_movies(u)
     precision = cal_precise(recommend_list,test_list)
     recall = cal_recall(recommend_list,test_list)
@@ -55,10 +60,34 @@ def estimate_recommender():
     estimate_json[u_str]['precision'] = precision_str
     estimate_json[u_str]['recall'] = recall_str
     estimate_json[u_str]['f1'] = f1_str
-  json.dump(estimate_json,open("result/result.txt",'w'))
+  # json.dump(estimate_json,open("result/result_3.txt",'w'))
   print 'average precision of hybird recommend method : ' + str(total_pre/len(user_list))
   print 'average recall of hybird recommend method : ' + str(total_recall/len(user_list))
   print 'average f1 of hybird recommend method : ' + str(total_f1/len(user_list))
+
+def get_result(path="result/result.txt"):
+  return json.load(file(path))
+
+def display_user_rating():
+  result = get_result()
+  zero_list = {}
+  for r in result:
+    train_c = len(db_info.user_train_movies(int(r)))
+    test_c = len(db_info.user_test_movies(int(r)))
+    zero_list[r] = {}
+    zero_list[r]['precision'] = result[r]['precision']
+    zero_list[r]['train_count'] = train_c
+    zero_list[r]['test_count'] = test_c
+  json.dump(zero_list,open("result/result_analysis.txt",'w'))
+
+def get_analysis_data(path="result/result_analysis.txt"):
+  return json.load(file(path))
+
+def filter_zero_user():
+  analysis_list = get_analysis_data()
+  for a in analysis_list:
+    if analysis_list[a]['precision'] > '0.1':
+      print str(analysis_list[a]['precision']) + " : " + str(analysis_list[a]['test_count']) + " , " + str(analysis_list[a]['train_count'])
 
 def main():
   estimate_recommender()
