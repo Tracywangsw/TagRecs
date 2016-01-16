@@ -39,7 +39,7 @@ def estimate_recommender():
 
   (total_pre,total_recall,total_f1) = (0,0,0)
   for u in user_list:
-    recommend_list = recommendation.recommend_for_user(u,50,50)
+    recommend_list = recommendation.recommend_for_user(u,50,30)
     test_list = db_info.user_test_movies(u)
     precision = cal_precise(recommend_list,test_list)
     recall = cal_recall(recommend_list,test_list)
@@ -90,4 +90,5 @@ def filter_zero_user():
       print str(analysis_list[a]['precision']) + " : " + str(analysis_list[a]['test_count']) + " , " + str(analysis_list[a]['train_count'])
 
 def main():
+  # recommendation.main()
   estimate_recommender()

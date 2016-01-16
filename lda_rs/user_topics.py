@@ -63,7 +63,7 @@ def user_topics(userid,model):
   topic_dis = lda.doc_topic_distribution(model,user_doc)
   return topic_dis
 
-def user_topic_dic(model=lda.load_lda('model/50_topics_lda.txt')):
+def user_topic_dic(model=lda.load_lda('model/100_topics_lda.txt')):
   topic_dic = {}
   for u in db_info.user_list:
     topic_dic[u] = user_topics(u,model)
@@ -108,11 +108,14 @@ def split_item(item,n=8):
     item_list.append(item[s:(i+1)*l/n])
   return item_list
 
+def save_lda():
+  item_lda_model(num_topics=100,path='model/100_topics_lda.txt')
+
 def main(processes = 8):
-  lda_loaded_model = lda.load_lda('model/50_topics_lda.txt')
+  lda_loaded_model = lda.load_lda('model/100_topics_lda.txt')
   user_list = db_info.user_list
   user_list_list = db.split_item(user_list)
   results = multiprocess(processes,lda_loaded_model,user_list_list)
-  json.dump(results,open("matrix/50_topics_sim_matrix.txt",'w'))
+  json.dump(results,open("matrix/100_topics_sim_matrix.txt",'w'))
   # topic_sim_matrix(lda_loaded_model)
   # item_lda_model(num_topics=50,path='model/50_topics_lda.txt')

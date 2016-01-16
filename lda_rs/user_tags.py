@@ -1,4 +1,3 @@
-# import db_util
 import db
 from math import sqrt
 import multiprocessing as mp
@@ -22,22 +21,17 @@ def list2hash(list):
 
 class generate_tag():
   def __init__(self,userid):
-    # self.mv_list = db_util.user_info(userid).user_mv_list
     self.mv_list = db_info.user_train_movies(userid)
 
   def mv_top_tags(self,mvid,top=10):
-    # tag_list = db_util.get_mv_tags(mvid)
-    # hash_tag = {}
     hash_tag = db_info.movie_tags(mvid)
     tags = []
     count = 0
-
     sort_tag = hash2list(hash_tag)
     for t in sort_tag: 
       if count >= top: break
       tags.append(t[1])
       count += 1
-
     return tags
 
   def user_tags(self,top=50):
@@ -72,14 +66,6 @@ def cosine_sim(set1,set2):
 
 def tag_sim_matrix(person,other):
   sim_matrix = {}
-  # for i in range(0,len(user_list)):
-  #   person = user_list[i]
-  #   person_tags = generate_tag(person).user_tags()
-  #   for j in range(i+1,len(user_list)):
-  #     other = user_list[j]
-  #     other_tags = generate_tag(other).user_tags()
-  #     sim_matrix[str((person,other))] = cosine_sim(person_tags,other_tags)
-  #     print sim_matrix[str((person,other))]
   person_tags = generate_tag(person).user_tags()
   other_tags = generate_tag(other).user_tags()
   sim_matrix[str((person,other))] = cosine_sim(person_tags,other_tags)

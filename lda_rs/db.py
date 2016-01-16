@@ -1,8 +1,8 @@
 import psycopg2
 
 def get_cursor():
-  # conn_str = "host='localhost' dbname='movielen_1m' user='dbuser' password='dbuser'"
-  conn_str = "host='localhost' dbname='movielen_1M' user='python' password='python'"
+  conn_str = "host='localhost' dbname='movielen_1m' user='dbuser' password='dbuser'"
+  # conn_str = "host='localhost' dbname='movielen_1M' user='python' password='python'"
   conn = psycopg2.connect(conn_str)
   cursor = conn.cursor()
   return cursor

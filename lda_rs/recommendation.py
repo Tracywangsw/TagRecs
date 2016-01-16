@@ -1,5 +1,6 @@
 import user_topics
 import user_tags
+import user_items
 import db
 import json
 
@@ -12,7 +13,7 @@ def user_sim_matrix():
   for m in topic_matrix:
     if m in tag_matrix:
       sim_matrix[m] = topic_matrix[m]*(tag_matrix[m]+0.001)
-  json.dump(sim_matrix,open("matrix/sim_matrix.txt",'w'))
+  json.dump(sim_matrix,open("matrix/100_sim_matrix.txt",'w'))
   return sim_matrix
 
 def get_sim_matrix(path='matrix/sim_matrix.txt'):
@@ -22,8 +23,9 @@ def get_sim_matrix(path='matrix/sim_matrix.txt'):
 def get_user_neighbors(userid,top):
   user_rank = []
   # global_sim_matrix = get_sim_matrix()
-  global_sim_matrix = user_topics.get_topic_sim_matrix()
+  global_sim_matrix = user_topics.get_topic_sim_matrix(path="matrix/50_topics_sim_matrix.txt")
   # global_sim_matrix = user_tags.get_tag_sim_matrix()
+  # global_sim_matrix = user_items.get_user_items_sim_matrix()
   for other in db_info.user_list:
     if other == userid: continue
     key1 = str((userid,other))
@@ -66,9 +68,9 @@ def list_count(tuple_list):
 
 def main():
   user_topics.main()
-  user_tags.main()
+  # user_tags.main()
   user_sim_matrix()
-  get_sim_matrix()
+  # get_sim_matrix()
   # print recommend_for_user(8,50)
   # topic_matrix = user_topics.get_topic_sim_matrix()
   # print topic_matrix[str((173, 358))]
