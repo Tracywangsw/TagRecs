@@ -1,6 +1,9 @@
 import db
 import recommendation
 import json
+import user_topics
+import user_tags
+import user_items
 
 db_info = db.info()
 
@@ -29,7 +32,7 @@ def cal_f1(recm,testm):
   if average == 0: return 0
   return precise*recall/average
 
-def estimate_recommender():
+def estimate_recommender(path):
   estimate_json = {}
   # user_list = db_info.user_list
   user_list = []
@@ -39,7 +42,7 @@ def estimate_recommender():
 
   (total_pre,total_recall,total_f1) = (0,0,0)
   for u in user_list:
-    recommend_list = recommendation.recommend_for_user(u,50,30)
+    recommend_list = recommendation.recommend_for_user(u,50,20,matrix=recommendation.get_sim_matrix(path))
     test_list = db_info.user_test_movies(u)
     precision = cal_precise(recommend_list,test_list)
     recall = cal_recall(recommend_list,test_list)
@@ -61,9 +64,9 @@ def estimate_recommender():
     estimate_json[u_str]['recall'] = recall_str
     estimate_json[u_str]['f1'] = f1_str
   # json.dump(estimate_json,open("result/result_3.txt",'w'))
-  print 'average precision of hybird recommend method : ' + str(total_pre/len(user_list))
-  print 'average recall of hybird recommend method : ' + str(total_recall/len(user_list))
-  print 'average f1 of hybird recommend method : ' + str(total_f1/len(user_list))
+  print 'average precision : ' + str(total_pre/len(user_list))
+  print 'average recall : ' + str(total_recall/len(user_list))
+  print 'average f1 : ' + str(total_f1/len(user_list))
 
 def get_result(path="result/result.txt"):
   return json.load(file(path))
@@ -90,5 +93,6 @@ def filter_zero_user():
       print str(analysis_list[a]['precision']) + " : " + str(analysis_list[a]['test_count']) + " , " + str(analysis_list[a]['train_count'])
 
 def main():
-  # recommendation.main()
-  estimate_recommender()
+  path = "matrix/hybrid/lda_50topics_tag.txt"
+  # recommendation.user_sim_matrix(path=path,matrix1=user_topics.get_topic_sim_matrix(),matrix2=user_tags.get_tag_sim_matrix())
+  estimate_recommender(path)
